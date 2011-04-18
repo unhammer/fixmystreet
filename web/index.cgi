@@ -205,16 +205,14 @@ EOF
     if (mySociety::Config::get('IPHONE_URL')
         || mySociety::Config::get('ANDROID_URL')) {
         $out .= '<div class="smartphone_block"n>';
-        $out .= $q->h2(_("Smartphone application")) . "\n";
+        $out .= $q->h2(_("Smartphone support")) . "\n";
         if (mySociety::Config::get('IPHONE_URL')) {
             my $url = mySociety::Config::get('IPHONE_URL');
-            # Or download and store in web/i/iphone.png
-            $out .= "<a href=\"$url\" target=\"_blank\"><img src=\"http://fixmystreet.com.br/media/images/prontosocorro_br/iphone.png\"/></a>\n";
+            $out .= "<a href=\"$url\" target=\"_blank\">iPhone</a>\n";
         }
         if (mySociety::Config::get('ANDROID_URL')) {
             my $url = mySociety::Config::get('ANDROID_URL');
-            # Or download and store in web/i/android.png
-            $out .= "<a href=\"$url\" target=\"_blank\"><img src=\"http://fixmystreet.com.br/media/images/prontosocorro_br/android.png\"/></a>\n";
+            $out .= "<a href=\"$url\" target=\"_blank\">Android</a>\n";
         }
         $out .= "</div>\n";
     }
