@@ -250,7 +250,9 @@ sub main {
                 $name = ent($q_ward) . ", $name";
             }
             my $all_councils_report = Cobrand::all_councils_report($cobrand);
-            my $showonmap = _("View 20 latest on Google Maps");
+            my $rss_limit = mySociety::Config::get('RSS_LIMIT');
+            my $showonmap = sprintf(_("View %d latest on Google Maps"),
+                                    $rss_limit);
             my %vars = (
                 base_url => $base_url,
                 showonmap => $showonmap,
