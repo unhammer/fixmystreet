@@ -24,6 +24,7 @@ sub main {
     my $all = $q->param('all') || 0;
     my $rss = $q->param('rss') || '';
     my $cobrand = Page::get_cobrand($q);
+    my $base_url = Cobrand::base_url($cobrand);
 
     # Look up council name, if given
     my $q_council = $q->param('council') || '';
@@ -249,8 +250,10 @@ sub main {
                 $name = ent($q_ward) . ", $name";
             }
             my $all_councils_report = Cobrand::all_councils_report($cobrand);
-
+            my $showonmap = _("View 20 latest on Google Maps");
             my %vars = (
+                base_url => $base_url,
+                showonmap => $showonmap,
                 rss_title => _('RSS feed'),
                 rss_alt => sprintf(_('RSS feed of problems in this %s'), $thing),
                 rss_url => Cobrand::url($cobrand, $rss_url, $q),
