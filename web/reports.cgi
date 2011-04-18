@@ -24,7 +24,6 @@ sub main {
     my $all = $q->param('all') || 0;
     my $rss = $q->param('rss') || '';
     my $cobrand = Page::get_cobrand($q);
-    my $base_url = Cobrand::base_url($cobrand);
 
     # Look up council name, if given
     my $q_council = $q->param('council') || '';
