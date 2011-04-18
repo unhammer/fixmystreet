@@ -137,18 +137,6 @@ sub front_page {
         if $q->{site} eq 'southampton';
     $out .= '<br><small>' . $subhead . '</small>' if $subhead ne ' ';
     $out .= '</p>';
-    #if (my $url = mySociety::Config::get('IPHONE_URL')) {
-    #    my $getiphone = _("Get FixMyStreet on your iPhone");
-    #    my $new = _("New!");
-    #    if ($q->{site} eq 'fixmystreet') {
-    #        $out .= <<EOF
-#<p align="center" style="margin-bottom:0">
-#<img width="23" height="12" alt="$new" src="/i/new.png" border="0">
-#<a href="$url">$getiphone</a>
-#</p>
-#EOF
-    #    }
-    #}
     $out .= '<p class="error">' . $error . '</p>' if ($error);
 
     # Add pretty commas for display
@@ -214,6 +202,22 @@ Now is the best time to turn empty properties into empty homes... Don't miss it!
 EOF
     }
 
+    if (mySociety::Config::get('IPHONE_URL')
+        || mySociety::Config::get('ANDROID_URL')) {
+        $out .= '<div class="smartphone_block"n>';
+        $out .= $q->h2(_("Smartphone application")) . "\n";
+        if (mySociety::Config::get('IPHONE_URL')) {
+            my $url = mySociety::Config::get('IPHONE_URL');
+            # Or download and store in web/i/iphone.png
+            $out .= "<a href=\"$url\" target=\"_blank\"><img src=\"http://fixmystreet.com.br/media/images/prontosocorro_br/iphone.png\"/></a>\n";
+        }
+        if (mySociety::Config::get('ANDROID_URL')) {
+            my $url = mySociety::Config::get('ANDROID_URL');
+            # Or download and store in web/i/android.png
+            $out .= "<a href=\"$url\" target=\"_blank\"><img src=\"http://fixmystreet.com.br/media/images/prontosocorro_br/android.png\"/></a>\n";
+        }
+        $out .= "</div>\n";
+    }
     return ($out, %params);
 }
 

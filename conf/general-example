@@ -68,6 +68,7 @@ define('OPTION_SMTP_SMARTHOST', 'localhost');
 define('OPTION_FLICKR_API', '');
 
 define('OPTION_IPHONE_URL', '');
+define('OPTION_ANDROID_URL', '');
 
 // Log file (used in test harness, and later in admin scripts)
 define('OPTION_HTTPD_ERROR_LOG', '/var/log/apache/error.log');
