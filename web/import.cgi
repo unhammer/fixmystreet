@@ -188,8 +188,9 @@ EOF
 sub categories_for_coordinate {
     my ($lat, $long) = @_;
 
+    my $all_councils;
     try {
-        my $all_councils = mySociety::MaPit::call( 'point', "4326/$long,$lat" );
+        $all_councils = mySociety::MaPit::call( 'point', "4326/$long,$lat" );
     } catch Error::Simple with {
         my $e = shift;
         # Hm, no categories for the given position
