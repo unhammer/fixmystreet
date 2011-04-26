@@ -137,6 +137,18 @@ sub front_page {
         if $q->{site} eq 'southampton';
     $out .= '<br><small>' . $subhead . '</small>' if $subhead ne ' ';
     $out .= '</p>';
+    #if (my $url = mySociety::Config::get('IPHONE_URL')) {
+    #    my $getiphone = _("Get FixMyStreet on your iPhone");
+    #    my $new = _("New!");
+    #    if ($q->{site} eq 'fixmystreet') {
+    #        $out .= <<EOF
+#<p align="center" style="margin-bottom:0">
+#<img width="23" height="12" alt="$new" src="/i/new.png" border="0">
+#<a href="$url">$getiphone</a>
+#</p>
+#EOF
+    #    }
+    #}
     $out .= '<p class="error">' . $error . '</p>' if ($error);
 
     # Add pretty commas for display
