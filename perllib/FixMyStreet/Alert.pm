@@ -244,8 +244,9 @@ sub _send_aggregated_alert_email(%) {
     }
 }
 
-sub generate_rss ($$$;$$$$) {
-    my ($type, $xsl, $qs, $db_params, $title_params, $cobrand, $http_q) = @_;
+sub generate_rss ($$$;$$$$$$) {
+    my ($type, $xsl, $qs, $db_params, $title_params, $cobrand, $http_q,
+        $db_criteria, $limit) = @_;
     $db_params ||= [];
     my $url = Cobrand::base_url($cobrand);
     my $cobrand_data = Cobrand::extra_data($cobrand, $http_q);
@@ -264,9 +265,11 @@ sub generate_rss ($$$;$$$$) {
     $site_restriction = '' unless $alert_type->{item_table} eq 'problem';
     my $query = 'select * from ' . $alert_type->{item_table} . ' where '
         . ($alert_type->{head_table} ? $alert_type->{head_table}.'_id=? and ' : '')
-        . $alert_type->{item_where} . $site_restriction . ' order by '
-        . $alert_type->{item_order};
+        . $alert_type->{item_where} . $site_restriction
+        . ($db_criteria ? "and $db_criteria" : '')
+        . ' order by ' . $alert_type->{item_order};
     my $rss_limit = mySociety::Config::get('RSS_LIMIT');
+    $rss_limit = $limit if ($limit && $limit < $rss_limit);
     $query .= " limit $rss_limit" unless $type =~ /^all/;
     $q = dbh()->prepare($query);
     if ($query =~ /\?/) {

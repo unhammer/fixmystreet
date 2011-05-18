@@ -249,8 +249,12 @@ sub main {
                 $name = ent($q_ward) . ", $name";
             }
             my $all_councils_report = Cobrand::all_councils_report($cobrand);
-
+            my $rss_limit = mySociety::Config::get('RSS_LIMIT');
+            my $showonmap = sprintf(_("View %d latest on Google Maps"),
+                                    $rss_limit);
             my %vars = (
+                base_url => $base_url,
+                showonmap => $showonmap,
                 rss_title => _('RSS feed'),
                 rss_alt => sprintf(_('RSS feed of problems in this %s'), $thing),
                 rss_url => Cobrand::url($cobrand, $rss_url, $q),

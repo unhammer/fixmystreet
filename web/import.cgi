@@ -15,11 +15,12 @@ use Utils;
 use mySociety::AuthToken;
 use mySociety::Config;
 use mySociety::EmailUtil;
+use mySociety::DBHandle qw(select_all);
 
 sub main {
     my $q = shift;
 
-    my @vars = qw(service subject detail name email phone easting northing lat lon id phone_id);
+    my @vars = qw(service categories subject detail name email phone easting northing lat lon id phone_id);
     my %input = map { $_ => $q->param($_) || '' } @vars;
     my @errors;
 
@@ -51,8 +52,21 @@ sub main {
     }
 
     push @errors, 'You must supply a service' unless $input{service};
+    if (defined $input{categories}) {
+        my @categories = categories_for_coordinate($latitude, $longitude);
+        if (@categories) {
+            print "SUCCESS\n";
+            print "CATEGORY: $_\n" foreach (@categories);
+        } else {
+            print "ERROR: No categories for $latitude $longitude\n";
+        }
+        return;
+    }
     push @errors, 'Please enter a subject' unless $input{subject} && $input{subject} =~ /\S/;
     push @errors, 'Please enter your name' unless $input{name} && $input{name} =~ /\S/;
+
+    # Verify category
+    $input{category} ||= '';
 
     if (!$input{email} || $input{email} !~ /\S/) {
         push @errors, 'Please enter your email';
@@ -106,9 +120,9 @@ sub main {
         (id, postcode, latitude, longitude, title, detail, name, service,
          email, phone, photo, state, used_map, anonymous, category, areas)
         values
-        (?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'partial', 't', 'f', '', '')", 10,
+        (?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'partial', 't', 'f', ?, '')", 10,
         $id, $latitude, $longitude, $input{subject},
-        $input{detail}, $input{name}, $input{service}, $input{email}, $input{phone}, $photo);
+        $input{detail}, $input{name}, $input{service}, $input{email}, $input{phone}, $photo, $input{category});
 
     my $token = mySociety::AuthToken::store('partial', $id);
     my %h = (
@@ -128,7 +142,6 @@ sub main {
 Page::do_fastcgi(\&main);
 
 sub docs {
-    my $base = mySociety::Config::get('BASE_URL');
     print <<EOF;
 <p>You may inject problem reports into FixMyStreet programatically using this
 simple interface. Upon receipt, an email will be sent to the address given,
@@ -140,7 +153,7 @@ the report has been successfully received, or if not, a list of errors, one per
 line each starting with <samp>ERROR:</samp>.
 
 <p>You may submit the following information by POST to this URL
-(i.e. <samp>$base/import</samp> ):</p>
+(i.e. <samp>http://www.fixmystreet.com/import</samp> ):</p>
 <dl>
 <dt>service
 <dd>
@@ -171,3 +184,28 @@ Name of application/service using this interface.
 EOF
 }
 
+# Look up categories for a given coordinate
+sub categories_for_coordinate {
+    my ($lat, $long) = @_;
+
+    my $all_councils;
+    try {
+        $all_councils = mySociety::MaPit::call( 'point', "4326/$long,$lat" );
+    } catch Error::Simple with {
+        my $e = shift;
+        # Hm, no categories for the given position
+        return ();
+    };
+
+    if (%$all_councils) {
+        my $categories =
+            select_all("select area_id, category from contacts " .
+                       "where deleted='f' " .
+                       "and area_id in (" . join(',', keys %$all_councils) . ')');
+        my %categorymap = (_('Other') => 1);
+        map { $categorymap{$_->{category}} = 1 } @$categories;
+        return sort keys %categorymap;
+    } else {
+        return ();
+    }
+}

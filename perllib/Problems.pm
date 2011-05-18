@@ -240,7 +240,9 @@ sub problems_matching_criteria {
     my ($criteria, @params) = @_;
     my $problems = select_all(
         "select id, title, council, category, detail, name, anonymous,
-        confirmed, whensent, service
+        confirmed, whensent, service, latitude, longitude, used_map,
+        state, created, lang, lastupdate,
+        external_id, external_body, external_team
         from problem
         $criteria
         $site_restriction", @params);
@@ -271,17 +273,27 @@ sub problems_matching_criteria {
 }
 
 sub fixed_in_interval {
-    my ($start_date, $end_date) = @_; 
+    my ($start_date, $end_date, $category) = @_;
     my $criteria = "where state='fixed' and date_trunc('day',lastupdate)>=? and 
 date_trunc('day',lastupdate)<=?";
-    return problems_matching_criteria($criteria, $start_date, $end_date);
+    my @args = ($start_date, $end_date);
+    if ($category) {
+        $criteria .= " and category = ?";
+        push(@args, $category);
+    }
+    return problems_matching_criteria($criteria, @args)
 }
 
 sub created_in_interval {
-    my ($start_date, $end_date) = @_; 
+    my ($start_date, $end_date, $category) = @_;
     my $criteria = "where state='confirmed' and date_trunc('day',created)>=? and 
 date_trunc('day',created)<=?";
-    return problems_matching_criteria($criteria, $start_date, $end_date);
+    my @args = ($start_date, $end_date);
+    if ($category) {
+        $criteria .= " and category = ?";
+        push(@args, $category);
+    }
+    return problems_matching_criteria($criteria, @args)
 }
 
 =item data_sharing_notification_start
@@ -449,6 +461,24 @@ sub contact_counts {
     my $contact_restriction = Cobrand::contact_restriction($cobrand);
     my $contacts = dbh()->selectcol_arrayref("select confirmed, count(*) as c from contacts $contact_restriction group by confirmed", { Columns => [1,2] });
     return $contacts; 
+}
+
+=item unique_emails_count COBRAND
+
+Return an the number of unique email addresses used to submit the live
+problem reports, to be used in the admin interface.
+Uses any site_restriction defined by a cobrand.
+
+=cut
+
+sub unique_emails_count {
+    my ($cobrand) = @_;
+    my $contact_restriction = Cobrand::contact_restriction($cobrand);
+    my $resultset = dbh()->selectall_arrayref(
+            "select count(*) from (select distinct email from problem " .
+            "where confirmed is not null ".
+            "and state in ('fixed', 'confirmed') $site_restriction) as t");
+    return $resultset->[0]->[0];
 }
 
 =item admin_fetch_problem ID
