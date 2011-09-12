@@ -261,4 +261,7 @@ sub reports_council_check {
     }
 }
 
+
+sub feed_xsl { '/xsl-no.xsl' }
+
 1;
